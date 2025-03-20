@@ -72,7 +72,7 @@ export default function FeaturedProducts() {
           </h2>
           <Link
             href="/catalog"
-            className="text-[#FF90BC] hover:text-[#FF70A6] font-medium flex items-center"
+            className="text-[#E2BA45] hover:text-[#C6A136] font-medium flex items-center"
           >
             Ver todos
             <ArrowRight className="ml-1 h-4 w-4" />
@@ -92,7 +92,7 @@ export default function FeaturedProducts() {
                   />
                   <div className="absolute top-2 left-2 flex gap-2">
                     {product.isNew && (
-                      <Badge className="bg-[#FF90BC] hover:bg-[#FF70A6]">
+                      <Badge className="bg-[#E2BA45] hover:bg-[#C6A136]">
                         Nuevo
                       </Badge>
                     )}
@@ -110,7 +110,7 @@ export default function FeaturedProducts() {
                   <p className="text-gray-600 text-sm mb-2 line-clamp-2">
                     {product.description}
                   </p>
-                  <p className="text-lg font-semibold text-[#FF90BC]">
+                  <p className="text-lg font-semibold text-[#E2BA45]">
                     ${product.price.toFixed(2)}
                   </p>
                 </CardContent>
@@ -122,7 +122,7 @@ export default function FeaturedProducts() {
         <div className="mt-12 text-center">
           <Button
             asChild
-            className="bg-[#FF90BC] hover:bg-[#FF70A6] px-8 py-6 text-lg"
+            className="bg-[#E2BA45] hover:bg-[#C6A136] px-8 py-6 text-lg"
           >
             <Link href="/catalog">Ver Catálogo Completo</Link>
           </Button>

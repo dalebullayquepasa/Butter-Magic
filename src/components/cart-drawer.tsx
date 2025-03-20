@@ -45,21 +45,24 @@ export default function CartDrawer({
   }, [cartItems]);
 
   return (
-    <Drawer open={isOpen} onOpenChange={onClose} direction="right">
-      <DrawerContent className="h-full w-full sm:max-w-md">
+    <div className={`fixed inset-0 z-50 ${isOpen ? "block" : "hidden"}`}>
+      <div 
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+      />
+      <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-lg flex flex-col border-l border-gray-100">
         <div className="h-full flex flex-col">
-          <DrawerHeader className="border-b border-gray-100 sticky top-0 bg-white z-10">
+          <div className="p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
             <div className="flex justify-between items-center">
-              <DrawerTitle className="flex items-center">
-                <ShoppingCart className="mr-2 h-5 w-5 text-[#FF90BC]" />
-                Tu Carrito (
-                {cartItems.reduce((sum, item) => sum + item.quantity, 0)})
-              </DrawerTitle>
+              <div className="flex items-center text-lg font-semibold">
+                <ShoppingCart className="mr-2 h-5 w-5 text-[#E2BA45]" />
+                Tu Carrito ({cartItems.reduce((sum, item) => sum + item.quantity, 0)})
+              </div>
               <Button variant="ghost" size="icon" onClick={onClose}>
                 <X className="h-5 w-5" />
               </Button>
             </div>
-          </DrawerHeader>
+          </div>
 
           {cartItems.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
@@ -74,7 +77,7 @@ export default function CartDrawer({
               </p>
               <Button
                 onClick={onClose}
-                className="bg-[#FF90BC] hover:bg-[#FF70A6]"
+                className="bg-[#E2BA45] hover:bg-[#C6A136]"
               >
                 Explorar Productos
               </Button>
@@ -113,7 +116,7 @@ export default function CartDrawer({
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        <p className="text-[#FF90BC] font-medium">
+                        <p className="text-[#E2BA45] font-medium">
                           ${item.price.toFixed(2)}
                         </p>
                         <div className="flex items-center mt-2">
@@ -151,7 +154,7 @@ export default function CartDrawer({
                 </div>
               </div>
 
-              <DrawerFooter className="border-t border-gray-100 bg-gray-50">
+              <div className="border-t border-gray-100 bg-gray-50 p-4 mt-auto">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Subtotal</span>
@@ -166,7 +169,7 @@ export default function CartDrawer({
                     <span>${total.toFixed(2)}</span>
                   </div>
                   <Button
-                    className="w-full bg-[#FF90BC] hover:bg-[#FF70A6] text-white py-6"
+                    className="w-full bg-[#E2BA45] hover:bg-[#C6A136] text-white py-6"
                     onClick={onCheckout}
                   >
                     Proceder al Pago
@@ -179,11 +182,11 @@ export default function CartDrawer({
                     Continuar Comprando
                   </Button>
                 </div>
-              </DrawerFooter>
+              </div>
             </>
           )}
         </div>
-      </DrawerContent>
-    </Drawer>
+      </div>
+    </div>
   );
 }

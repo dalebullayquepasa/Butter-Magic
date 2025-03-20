@@ -5,11 +5,13 @@ import { createClient } from '../../supabase/server';
 interface SubscriptionCheckProps {
     children: React.ReactNode;
     redirectTo?: string;
+    requireSubscription?: boolean;
 }
 
 export async function SubscriptionCheck({
     children,
-    redirectTo = '/pricing'
+    redirectTo = '/pricing',
+    requireSubscription = false
 }: SubscriptionCheckProps) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -18,10 +20,13 @@ export async function SubscriptionCheck({
         redirect('/sign-in');
     }
 
-    const isSubscribed = await checkUserSubscription(user?.id!);
+    // Solo verificar suscripción si es requerida
+    if (requireSubscription) {
+        const isSubscribed = await checkUserSubscription(user?.id!);
 
-    if (!isSubscribed) {
-        redirect(redirectTo);
+        if (!isSubscribed) {
+            redirect(redirectTo);
+        }
     }
 
     return <>{children}</>;

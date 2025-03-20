@@ -5,9 +5,11 @@ import ClientNavbar from "@/components/client-navbar";
 import Footer from "@/components/footer";
 import ProductCard, { ProductProps } from "@/components/product-card";
 import ProductFilter, { FilterOptions } from "@/components/product-filter";
-import CartDrawer, { CartItem } from "@/components/cart-drawer";
+import CartDrawer from "@/components/cart-drawer";
+import ProductDetailModal from "@/components/product-detail-modal";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Filter as FilterIcon } from "lucide-react";
+import { useCart } from "@/context/cart-context";
 
 // Sample product data - in a real app, this would come from an API
 const SAMPLE_PRODUCTS: ProductProps[] = [
@@ -161,11 +163,22 @@ export default function CatalogPage() {
   const [products, setProducts] = useState<ProductProps[]>(SAMPLE_PRODUCTS);
   const [filteredProducts, setFilteredProducts] =
     useState<ProductProps[]>(SAMPLE_PRODUCTS);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductProps | null>(null);
+  const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
 
-  // Extract all unique categories using a different approach to avoid Set iteration issues
+  // Usar el contexto del carrito
+  const { 
+    cartItems, 
+    isCartOpen, 
+    setIsCartOpen, 
+    addToCart, 
+    updateCartItemQuantity,
+    removeCartItem,
+    totalItems
+  } = useCart();
+
+  // Extract all unique categories
   const uniqueCategories: string[] = [];
   SAMPLE_PRODUCTS.forEach((product) => {
     if (!uniqueCategories.includes(product.category)) {
@@ -207,55 +220,29 @@ export default function CatalogPage() {
     setFilteredProducts(filtered);
   };
 
-  // Cart functions
-  const addToCart = (product: ProductProps) => {
-    setCartItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === product.id);
-
-      if (existingItem) {
-        return prevItems.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
-        );
-      } else {
-        return [...prevItems, { ...product, quantity: 1 }];
-      }
-    });
-
-    // Open cart when adding first item
-    if (cartItems.length === 0) {
-      setIsCartOpen(true);
-    }
-  };
-
-  const updateCartItemQuantity = (id: string, quantity: number) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) => (item.id === id ? { ...item, quantity } : item)),
-    );
-  };
-
-  const removeCartItem = (id: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
-  };
-
+  // Función para redirigir al checkout
   const handleCheckout = () => {
-    // In a real app, this would navigate to checkout
     alert("Redirigiendo al proceso de pago...");
   };
 
-  // Calculate total items in cart for the badge
-  const totalCartItems = cartItems.reduce(
-    (sum, item) => sum + item.quantity,
-    0,
-  );
+  // View product details
+  const viewProductDetails = (product: ProductProps) => {
+    setSelectedProduct(product);
+    setIsProductDetailOpen(true);
+  };
+
+  // Add to cart with quantity from product detail
+  const addToCartWithQuantity = (product: ProductProps, quantity: number) => {
+    addToCart(product, quantity);
+    setIsCartOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <ClientNavbar />
 
       {/* Hero Banner */}
-      <div className="relative bg-[#FF90BC] text-white py-16">
+      <div className="relative bg-[#E2BA45] text-white py-16">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=1200&q=80')] bg-cover bg-center opacity-20"></div>
         <div className="container mx-auto px-4 relative z-10 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -278,13 +265,18 @@ export default function CatalogPage() {
           >
             <FilterIcon className="mr-2 h-4 w-4" />
             Filtros
+            {filteredProducts.length !== products.length && (
+              <span className="ml-2 bg-[#E2BA45] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                !
+              </span>
+            )}
           </Button>
         </div>
 
         <div className="flex flex-col md:flex-row gap-6">
           {/* Filters - Mobile Collapsible, Desktop Sidebar */}
           <div
-            className={`md:w-1/4 ${isMobileFilterOpen ? "block" : "hidden md:block"}`}
+            className={`md:w-64 ${isMobileFilterOpen ? "block" : "hidden md:block"}`}
           >
             <ProductFilter
               allCategories={allCategories}
@@ -296,7 +288,7 @@ export default function CatalogPage() {
           </div>
 
           {/* Product Grid */}
-          <div className="md:w-3/4">
+          <div className="flex-1">
             {filteredProducts.length === 0 ? (
               <div className="text-center py-12">
                 <h3 className="text-xl font-medium text-gray-900 mb-2">
@@ -312,7 +304,7 @@ export default function CatalogPage() {
                       isVegan: false,
                     })
                   }
-                  className="bg-[#FF90BC] hover:bg-[#FF70A6]"
+                  className="bg-[#E2BA45] hover:bg-[#C6A136]"
                 >
                   Ver todos los productos
                 </Button>
@@ -324,6 +316,7 @@ export default function CatalogPage() {
                     key={product.id}
                     product={product}
                     onAddToCart={addToCart}
+                    onViewDetails={viewProductDetails}
                   />
                 ))}
               </div>
@@ -336,12 +329,12 @@ export default function CatalogPage() {
       <div className="fixed bottom-6 right-6 z-50">
         <Button
           onClick={() => setIsCartOpen(true)}
-          className="h-14 w-14 rounded-full bg-[#FF90BC] hover:bg-[#FF70A6] shadow-lg flex items-center justify-center relative"
+          className="h-14 w-14 rounded-full bg-[#E2BA45] hover:bg-[#C6A136] shadow-lg flex items-center justify-center relative"
         >
           <ShoppingCart className="h-6 w-6" />
-          {totalCartItems > 0 && (
-            <span className="absolute -top-2 -right-2 bg-white text-[#FF90BC] rounded-full h-6 w-6 flex items-center justify-center text-sm font-bold">
-              {totalCartItems}
+          {totalItems > 0 && (
+            <span className="absolute -top-2 -right-2 bg-white text-[#E2BA45] rounded-full h-6 w-6 flex items-center justify-center text-sm font-bold">
+              {totalItems}
             </span>
           )}
         </Button>
@@ -355,6 +348,17 @@ export default function CatalogPage() {
         onUpdateQuantity={updateCartItemQuantity}
         onRemoveItem={removeCartItem}
         onCheckout={handleCheckout}
+      />
+
+      {/* Product Detail Modal */}
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={isProductDetailOpen}
+        onClose={() => {
+          setIsProductDetailOpen(false);
+          setSelectedProduct(null);
+        }}
+        onAddToCart={addToCartWithQuantity}
       />
 
       <Footer />
